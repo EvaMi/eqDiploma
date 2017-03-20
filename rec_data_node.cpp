@@ -47,13 +47,6 @@ int main(const int argc, char** argv)
   co::ConnectionDescriptionPtr connDesc=new co::ConnectionDescription;
   co::ConnectionPtr con1;
 
-  co::LocalNodePtr server = new co::LocalNode;
-  server->addConnectionDescription( connDesc );
-  server->listen( );
-
-  co::NodePtr serverProxy = new co::Node;
-  serverProxy->addConnectionDescription( connDesc );
-
   connDesc = new co::ConnectionDescription;
   connDesc->type = co::CONNECTIONTYPE_TCPIP;
   connDesc->setHostname( "localhost" );
@@ -62,19 +55,21 @@ int main(const int argc, char** argv)
   co::LocalNodePtr client = new co::LocalNode;
   client->addConnectionDescription( connDesc );
   client->listen( );
-  std::cout<< "wow:" << std::endl;
-  client->connect( serverProxy );
-  std::cout<< "wowowowow:" << std::endl;
 
-  getchar();
+  co::NodePtr serverProxy = new co::Node;
+  serverProxy->addConnectionDescription( connDesc );
+
+  //тут надо сделать command handle!!!
+  //client->connect( serverProxy );
+  //client->co::LocalNode::dispatchCommand(Null);
+
+  //getchar();
   std::cout<< "End:" << std::endl;
-  client->disconnect( serverProxy);
+  //client->disconnect( serverProxy);
   client->close( );
-  server->close( );
 
   serverProxy = 0;
   client = 0;
-  server = 0;
 
   co::exit();
   getchar();

@@ -20,15 +20,18 @@ int main( int argc, char **argv )
 
     co::ConnectionDescriptionPtr listen = new co::ConnectionDescription;
     listen->type = co::CONNECTIONTYPE_TCPIP;
-    listen->port = co::Global::getDefaultPort();
-    std::string listenArg( argv[1] );
-    listen->fromString( listenArg );
+    connDesc->setHostname( "localhost" );
+    listen->port=49868;
+    //std::string listenArg( argv[1] );
+    //listen->fromString( listenArg );
 
     co::ConnectionDescriptionPtr forward = new co::ConnectionDescription;
     forward->type = co::CONNECTIONTYPE_TCPIP;
-    forward->port = co::Global::getDefaultPort() + 1;
-    std::string forwardArg( argv[2] );
-    forward->fromString( forwardArg );
+    connDesc1->setHostname( "localhost" );
+    connDesc->port=52822;
+    //forward->port = co::Global::getDefaultPort() + 1;
+    //std::string forwardArg( argv[2] );
+    //forward->fromString( forwardArg );
 
     // wait for input connection
     co::ConnectionPtr connection = co::Connection::create( listen );
@@ -95,7 +98,7 @@ int main( int argc, char **argv )
                     else
                         input->send( buffer, read );
                 }
-                connection->readNB( buffer, BUFFERSIZE );
+                connection_->readNB( buffer, BUFFERSIZE);
                 break;
             }
 

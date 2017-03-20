@@ -101,7 +101,7 @@ int main(const int argc, char** argv)
   //Local node for proxy
   co::LocalNodePtr server = new co::LocalNode;
   connDesc1->setHostname( "localhost" );
-  connDesc->port=49868;
+  connDesc->port=52822;
   connDesc->setFilename("pfiles_");
   server->addConnectionDescription( connDesc );
   server->listen( );
@@ -110,47 +110,10 @@ int main(const int argc, char** argv)
   co::NodePtr serverProxy = new co::Node;
   serverProxy->addConnectionDescription( connDesc );
 
-  //connection description for main node
-  connDesc1 = new co::ConnectionDescription;
-  connDesc1->type = co::CONNECTIONTYPE_TCPIP;
-  connDesc1->setHostname( "localhost" );
-  connDesc1->port=52822;
-  connDesc1->setFilename("mfiles_");
+  //client->connect( serverProxy );
 
-  //Main local node
-  co::LocalNodePtr client = new co::LocalNode;
-  client->addConnectionDescription( connDesc1 );
-  client->listen( );
-  std::cout<< "wow:" << std::endl;
-  client->connect( serverProxy );
-  client->connect( serverProxy );
-  std::cout<< "wowowowow:" << std::endl;
+  //тут надо сделать command handle!!!
 
-  co::ConnectionPtr con1;
-  con1=serverProxy->co::Node::getConnection	(false);
-  //con1=co::Connection::create(connDesc1);
-  //con1->co::Connection::listen();
-  std::cout <<con1->co::Connection::getDescription	(		)<< std::endl;
-  int intValue = static_cast<int>(con1->co::Connection::getState());
-  std::cout <<intValue<< std::endl;
-  con1->co::Connection::unlockSend();
-  /*
-  std::cout<< "nononono:" << std::endl;
-  con1->co::Connection::send("gndi",2,false);
-  std::cout<< "niuhiuhiuhuifh:" << std::endl;
-  */
-  //configure buffer
-  co::Buffer buffer;
-  co::BufferPtr syncBuffer;
-  buffer.reserve( 12 );
-  co::Buffer buffer1;
-  buffer1.reserve( 12 );
-
-  std::cout<< "nononono:" << std::endl;
-  con1->co::Connection::send(&buffer,12,false );
-
-  //con1->co::Connection::readSync(buffer,12);
-  std::cout<< "niuhiuhiuhuifh:" << std::endl;
   //clear end close
   std::cout<< "End:" << std::endl;
   client->disconnect( serverProxy);
