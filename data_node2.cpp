@@ -116,12 +116,12 @@ int main(const int argc, char** argv)
 
   //clear end close
   std::cout<< "End:" << std::endl;
-  client->disconnect( serverProxy);
-  client->close( );
+  //client->disconnect( serverProxy);
+  //client->close( );
   server->close( );
 
   serverProxy = 0;
-  client = 0;
+  //client = 0;
   server = 0;
 
   co::exit();
