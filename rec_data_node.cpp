@@ -12,29 +12,47 @@
 #include <eqHello/fragmentShader.glsl.h>
 #include <eqHello/vertexShader.glsl.h>
 
+#define PACKETSIZE (123456)
+
 namespace data_node
 {
-    class LocalNode : public co::LocalNode
-    {
-      //public:
-      //virtual  ~LocalNode(){}
-    };
-    class Node : public co::Node
-    {
-      //public:
-      //virtual  ~Node(){}
-    };
-    class Connection :  public co::Connection
-    {
-      //virtual  ~Connection(){}
-    };
-    class ConnectionDescription : public co::ConnectionDescription
-    {
-      //public:
-      //virtual  ~ConnectionDescription(){}
-    };
+
+  class Reader : public lunchbox::Thread
+  {
+  public:
+    explicit Reader( co::ConnectionPtr connection ): connection_( connection ){}
+      void run() override
+      {
+          co::ConnectionPtr listener = connection_;
+          connection_ = listener->acceptSync();
+
+          co::Buffer buffer;
+          co::BufferPtr syncBuffer;
+          buffer.reserve( PACKETSIZE );
+          uint64_t& sequence = *reinterpret_cast< uint64_t* >( buffer.getData( ));
+          sequence = 0;
+          //uint64_t i = 0;
+
+
+          while( sequence != 0xdeadbeef )
+          {
+              connection_->recvNB( &buffer, 123456 );
+              sequence = 0xdeadbeef;
+              buffer.setSize( 0 );
+          }
+
+          connection_->recvNB( &buffer, 123456 );
+          connection_ = 0;
+          std::cout<<"buffer" << std::endl;
+          std::cout<<buffer.getData( ) << std::endl;
+      }
+    private:
+      co::ConnectionPtr connection_;
+  };
+
 typedef lunchbox::RefPtr<co::LocalNode> LocalNodePtr;
 typedef lunchbox::RefPtr<co::Node> NodePtr;
+typedef lunchbox::RefPtr<co::Buffer> BufferPtr;
 typedef lunchbox::RefPtr<co::Connection>ConnectionPtr;
 typedef lunchbox::RefPtr<co::ConnectionDescription>ConnectionDescriptionPtr;
 }
@@ -44,35 +62,78 @@ int main(const int argc, char** argv)
 {
   //pointers
   co::init(argc, argv);
-  co::ConnectionDescriptionPtr connDesc=new co::ConnectionDescription;
+  data_node::ConnectionDescriptionPtr connDesc=new co::ConnectionDescription;
   co::ConnectionPtr con1;
 
   connDesc = new co::ConnectionDescription;
   connDesc->type = co::CONNECTIONTYPE_TCPIP;
-  connDesc->setHostname( "localhost" );
+  connDesc->setHostname( "127.0.0.1" );
+  connDesc->setFilename("cfiles_");
   connDesc->port=49868;
 
-  co::LocalNodePtr client = new co::LocalNode;
+  data_node::LocalNodePtr client = new co::LocalNode;
   client->addConnectionDescription( connDesc );
-  client->listen( );
+  //client->listen( );
+  data_node::ConnectionPtr listener;
+  listener = co::Connection::create( connDesc );
+  listener->listen();
+  listener->acceptNB();
 
-  co::NodePtr serverProxy = new co::Node;
+  //Local node for proxy
+  data_node::LocalNodePtr server = new co::LocalNode;
+  connDesc = new co::ConnectionDescription;
+  connDesc->setHostname( "127.0.0.1" );
+  connDesc->port=52822;
+  connDesc->setFilename("sfiles_");
+  server->addConnectionDescription( connDesc );
+  server->listen( );
+
+  data_node::NodePtr serverProxy = new co::Node;
   serverProxy->addConnectionDescription( connDesc );
+  std::cout<< "1111gldehndkhnd:" << std::endl;
+  //if(client->connect( serverProxy ))
+    //std::cout<< "Succesfull connected" << std::endl;
 
-  //тут надо сделать command handle!!!
-  //client->connect( serverProxy );
-  //client->co::LocalNode::dispatchCommand(Null);
+    data_node::ConnectionPtr writer;
+    writer = co::Connection::create( connDesc );
 
-  //getchar();
+  data_node::Reader readThread( listener );
+  writer->connect( );
+
+  //connection=serverProxy->co::Node::getConnection();
+  //std::cout<<connection->co::Connection::getDescription()<< std::endl;
+  float x0=-1;
+  float x[100];
+  float dx=0.04;
+  int imax=48;
+  for (int i=0; i<=imax; i++){
+           x[i]=x0+i*dx;
+  }
+  //uint64_t sequence = 1;
+  //++sequence;
+  //for (int i=0; i<=imax; i++){
+  //        writer->send( &x[i], sizeof(float));
+  //}
+  if(writer->send( &x, sizeof(float)*100))
+    std::cout<< "aloe:" << std::endl;
+
+  uint64_t sequence = 0;
+  sequence= 0xdeadbeef;
+  if(writer->send( &sequence, sizeof( uint64_t )))
+      std::cout<< "aloe:" << std::endl;
+
+  std::cout<< "gldkjhdljhd:" << std::endl;
   std::cout<< "End:" << std::endl;
+
   //client->disconnect( serverProxy);
   client->close( );
+  server->close( );
 
   serverProxy = 0;
   client = 0;
+  server=0;
 
   co::exit();
-  getchar();
   return EXIT_SUCCESS;
 
 }
